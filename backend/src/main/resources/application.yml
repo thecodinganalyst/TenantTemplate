@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: tenant-template
+  profiles:
+    default: dev
+  jpa:
+    open-in-view: false
+  flyway:
+    enabled: true
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+server:
+  servlet:
+    session:
+      cookie:
+        same-site: lax

@@ -1,0 +1,11 @@
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_DB: tenant_template
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports: ["5432:5432"]
+    volumes: [tenant_template_pg:/var/lib/postgresql/data]
+volumes:
+  tenant_template_pg:

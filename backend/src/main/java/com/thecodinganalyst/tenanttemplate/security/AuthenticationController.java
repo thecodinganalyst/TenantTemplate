@@ -1,0 +1,11 @@
+package com.thecodinganalyst.tenanttemplate.security;
+import java.util.UUID; import jakarta.servlet.http.*; import jakarta.validation.Valid; import jakarta.validation.constraints.NotBlank; import org.springframework.http.*; import org.springframework.security.authentication.*; import org.springframework.security.core.*; import org.springframework.security.core.annotation.AuthenticationPrincipal; import org.springframework.security.core.context.*; import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler; import org.springframework.security.web.context.*; import org.springframework.web.bind.annotation.*; import org.springframework.web.server.ResponseStatusException;
+@RestController @RequestMapping("/api/auth") public class AuthenticationController {
+ private final AuthenticationManager manager; private final SecurityContextRepository contexts=new HttpSessionSecurityContextRepository();
+ public AuthenticationController(AuthenticationManager m){manager=m;}
+ @PostMapping("/login") public UserResponse login(@Valid @RequestBody LoginRequest r,HttpServletRequest req,HttpServletResponse res){try{var a=manager.authenticate(UsernamePasswordAuthenticationToken.unauthenticated(r.username().trim(),r.password()));var c=SecurityContextHolder.createEmptyContext();c.setAuthentication(a);SecurityContextHolder.setContext(c);contexts.saveContext(c,req,res);return response((TenantTemplatePrincipal)a.getPrincipal());}catch(AuthenticationException e){throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"Invalid username or password");}}
+ @PostMapping("/logout") public ResponseEntity<Void> logout(HttpServletRequest r,HttpServletResponse s,Authentication a){new SecurityContextLogoutHandler().logout(r,s,a);return ResponseEntity.noContent().build();}
+ @GetMapping("/me") public UserResponse me(@AuthenticationPrincipal TenantTemplatePrincipal p){return response(p);}
+ private UserResponse response(TenantTemplatePrincipal p){return new UserResponse(p.userId(),p.username(),p.role(),p.tenantId());}
+ public record LoginRequest(@NotBlank String username,@NotBlank String password){} public record UserResponse(UUID userId,String username,ApplicationRole role,UUID tenantId){}
+}

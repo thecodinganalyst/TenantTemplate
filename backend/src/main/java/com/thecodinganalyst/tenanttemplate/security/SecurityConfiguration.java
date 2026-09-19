@@ -1,0 +1,7 @@
+package com.thecodinganalyst.tenanttemplate.security;
+import org.springframework.context.annotation.*; import org.springframework.security.authentication.*; import org.springframework.security.config.Customizer; import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration; import org.springframework.security.config.annotation.web.builders.HttpSecurity; import org.springframework.security.crypto.bcrypt.*; import org.springframework.security.crypto.password.*; import org.springframework.security.web.*; import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+@Configuration public class SecurityConfiguration {
+ @Bean SecurityFilterChain chain(HttpSecurity http,TenantContextSecurityFilter f)throws Exception{return http.csrf(c->c.disable()).cors(Customizer.withDefaults()).authorizeHttpRequests(a->a.requestMatchers("/actuator/health","/api/auth/login").permitAll().requestMatchers("/api/platform/**").hasRole("PLATFORM_ADMIN").requestMatchers("/api/tenant/**").hasRole("TENANT_ADMIN").anyRequest().authenticated()).httpBasic(Customizer.withDefaults()).addFilterAfter(f,BasicAuthenticationFilter.class).build();}
+ @Bean AuthenticationManager authenticationManager(AuthenticationConfiguration c)throws Exception{return c.getAuthenticationManager();}
+ @Bean PasswordEncoder passwordEncoder(){return new BCryptPasswordEncoder();}
+}
