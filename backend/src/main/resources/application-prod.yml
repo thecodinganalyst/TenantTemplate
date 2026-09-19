@@ -1,0 +1,10 @@
+spring:
+  datasource:
+    url: ${TENANT_TEMPLATE_DB_URL}
+    username: ${TENANT_TEMPLATE_DB_USER}
+    password: ${TENANT_TEMPLATE_DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+server:
+  forward-headers-strategy: framework
