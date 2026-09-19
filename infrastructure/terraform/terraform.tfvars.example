@@ -1,0 +1,4 @@
+project_id = "your-gcp-project"
+region = "asia-southeast1"
+cloud_run_service_name = "your-app-api"
+container_image = "asia-southeast1-docker.pkg.dev/your-gcp-project/your-repository/backend:latest"
