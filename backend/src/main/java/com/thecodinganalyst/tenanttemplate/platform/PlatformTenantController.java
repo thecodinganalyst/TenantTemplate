@@ -1,0 +1,11 @@
+package com.thecodinganalyst.tenanttemplate.platform;
+import java.util.*; import com.thecodinganalyst.tenanttemplate.security.*; import com.thecodinganalyst.tenanttemplate.tenant.*; import jakarta.validation.Valid; import jakarta.validation.constraints.*; import org.springframework.security.crypto.password.PasswordEncoder; import org.springframework.web.bind.annotation.*;
+@RestController @RequestMapping("/api/platform/tenants") public class PlatformTenantController {
+ private final TenantRepository tenants; private final ApplicationUserRepository users; private final PasswordEncoder encoder;
+ public PlatformTenantController(TenantRepository t,ApplicationUserRepository u,PasswordEncoder e){tenants=t;users=u;encoder=e;}
+ @GetMapping public List<TenantResponse> list(){return tenants.findAll().stream().map(TenantResponse::from).toList();}
+ @PostMapping public TenantResponse create(@Valid @RequestBody CreateTenantRequest r){if(tenants.findByCode(r.code()).isPresent())throw new IllegalArgumentException("Tenant code already exists");return TenantResponse.from(tenants.save(new Tenant(r.code().trim().toUpperCase(),r.name().trim())));}
+ @PostMapping("/{tenantId}/admins") public AdminResponse createAdmin(@PathVariable UUID tenantId,@Valid @RequestBody CreateAdminRequest r){var t=tenants.findById(tenantId).orElseThrow();if(users.findByUsername(r.username()).isPresent())throw new IllegalArgumentException("Username already exists");var u=users.save(new ApplicationUser(r.username().trim(),encoder.encode(r.password()),ApplicationRole.TENANT_ADMIN,t));return new AdminResponse(u.getId(),u.getUsername(),t.getId());}
+ public record CreateTenantRequest(@NotBlank String code,@NotBlank String name){} public record CreateAdminRequest(@NotBlank String username,@Size(min=12) String password){} public record AdminResponse(UUID id,String username,UUID tenantId){}
+ public record TenantResponse(UUID id,String code,String name){static TenantResponse from(Tenant t){return new TenantResponse(t.getId(),t.getCode(),t.getName());}}
+}
